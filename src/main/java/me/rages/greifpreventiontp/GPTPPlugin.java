@@ -27,10 +27,10 @@ public class GPTPPlugin extends ExtendedJavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
         }
 
-        Commands.create().assertPermission("griefpreventiontp.default")
+        Commands.create().assertPermission("griefpreventiontp.use")
                 .assertPlayer()
                 .handler(cmd -> {
-                    new GPMenu(this, cmd.sender(), 3, "Teleport Menu").open();
+                    new GPMenu(this, cmd.sender(), 5, "Teleport Menu").open();
                 }).registerAndBind(this, new String[]{"griefpreventiontp", "gptp"});
     }
 
