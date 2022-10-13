@@ -3,6 +3,7 @@ package me.rages.greifpreventiontp;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuScheme;
+import me.rages.greifpreventiontp.bedrock.BedrockUI;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.ChatColor;
@@ -11,18 +12,17 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
+import org.geysermc.floodgate.api.FloodgateApi;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author : Michael
  * @since : 10/11/2022, Tuesday
  **/
-public class GPMenu extends Gui {
+public class ClaimsUI extends Gui {
 
     private static final MenuScheme SCHEME = new MenuScheme()
-            .maskEmpty(1)
             .mask("111111111")
             .mask("111111111")
             .mask("111111111")
@@ -30,12 +30,15 @@ public class GPMenu extends Gui {
 
     private GPTPPlugin plugin;
 
-    private List<String> claimLore;
+    private List<String> claimLoreJava;
+    private List<String> claimLoreBedrock;
 
-    public GPMenu(GPTPPlugin plugin, Player player, int lines, String title) {
-        super(player, lines, title);
+    public ClaimsUI(GPTPPlugin plugin, Player player, String title) {
+        super(player, 6, title);
         this.plugin = plugin;
-        this.claimLore = plugin.getConfig().getStringList("guis.claim.lore");
+        this.claimLoreJava = plugin.getConfig().getStringList("guis.claim-java.lore");
+        this.claimLoreBedrock = plugin.getConfig().getStringList("guis.claim-bedrock.lore");
+
     }
 
     @Override
@@ -56,8 +59,13 @@ public class GPMenu extends Gui {
 
             ItemStackBuilder builder = ItemStackBuilder.of(Material.PLAYER_HEAD)
                     .data(3)
-                    .name(ChatColor.GREEN + "Unnamed Claim (" + count++ + ")")
                     .transformMeta(meta -> ((SkullMeta) meta).setOwner(getPlayer().getName()));
+
+            if (plugin.getClaimRenameMap().containsKey(claim.getID())) {
+                builder.name(ChatColor.GREEN + plugin.getClaimRenameMap().get(claim.getID()));
+            } else {
+                builder.name(ChatColor.GREEN + "Unnamed Claim (" + count++ + ")");
+            }
 
             Location min = claim.getLesserBoundaryCorner();
             Location max = claim.getGreaterBoundaryCorner();
@@ -67,6 +75,8 @@ public class GPMenu extends Gui {
                     (min.getBlockY() + max.getBlockY()) / 2,
                     (min.getBlockZ() + max.getBlockZ()) / 2
             );
+
+            List<String> claimLore = plugin.useFloodgateUI && FloodgateApi.getInstance().isFloodgatePlayer(getPlayer().getUniqueId()) ? claimLoreBedrock : claimLoreJava;
 
             for (String lore : claimLore) {
                 builder.lore(lore
@@ -81,15 +91,26 @@ public class GPMenu extends Gui {
 
             setItem(slotIter.next(), builder.build(() -> {
                 // right click
-                getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+                plugin.promptPlayer(claim, getPlayer());
             }, () -> {
                 // left click
-                getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+                if (plugin.useFloodgateUI && FloodgateApi.getInstance().isFloodgatePlayer(getPlayer().getUniqueId())) {
+                    getPlayer().closeInventory();
+//                    new BedrockUI(plugin, claim, location, getPlayer()).open();
+                    getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+                } else {
+                    getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+                }
             }));
+
+
         }
 
 
     }
 
+    public void teleportPlayer(Location location) {
+        getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+    }
 
 }

@@ -1,5 +1,14 @@
 guis:
-  claim:
+  claim-java:
+    name:
+    lore:
+      - "&7Owner: &e%owner%"
+      - "&7World: &d%world%"
+      - "&7Claim Size: &b%size%"
+      - "&8%x%, %y%, %z%"
+      - ""
+      - "&7Click to teleport to claim!"
+  claim-bedrock:
     name:
     lore:
       - "&7Owner: &e%owner%"
