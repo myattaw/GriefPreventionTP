@@ -22,7 +22,6 @@ import java.util.Arrays;
  **/
 public class BedrockUI extends Gui {
 
-
     private static final int[] TELEPORT_SLOTS = {0, 1, 2, 3, 9, 10, 11, 12, 18, 19, 20, 21};
     private static final int[] RENAME_SLOTS = {5, 6, 7, 8, 14, 15, 16, 17, 23, 24, 25, 26};
 

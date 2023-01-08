@@ -3,7 +3,6 @@ package me.rages.greifpreventiontp;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuScheme;
-import me.rages.greifpreventiontp.bedrock.BedrockUI;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.ChatColor;
@@ -14,7 +13,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.geysermc.floodgate.api.FloodgateApi;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author : Michael
@@ -57,9 +57,14 @@ public class ClaimsUI extends Gui {
 
         for (Claim claim : GriefPrevention.instance.dataStore.getPlayerData(getPlayer().getUniqueId()).getClaims()) {
 
-            ItemStackBuilder builder = ItemStackBuilder.of(Material.PLAYER_HEAD)
-                    .data(3)
-                    .transformMeta(meta -> ((SkullMeta) meta).setOwner(getPlayer().getName()));
+            ItemStackBuilder builder;
+            if (plugin.useFloodgateUI && FloodgateApi.getInstance().isFloodgatePlayer(getPlayer().getUniqueId())) {
+                builder = ItemStackBuilder.of(Material.GRASS_BLOCK);
+            } else {
+                builder = ItemStackBuilder.of(Material.PLAYER_HEAD)
+                        .data(3)
+                        .transformMeta(meta -> ((SkullMeta) meta).setOwner(getPlayer().getName()));
+            }
 
             if (plugin.getClaimRenameMap().containsKey(claim.getID())) {
                 builder.name(ChatColor.GREEN + plugin.getClaimRenameMap().get(claim.getID()));
@@ -89,19 +94,21 @@ public class ClaimsUI extends Gui {
                 );
             }
 
-            setItem(slotIter.next(), builder.build(() -> {
-                // right click
-                plugin.promptPlayer(claim, getPlayer());
-            }, () -> {
-                // left click
-                if (plugin.useFloodgateUI && FloodgateApi.getInstance().isFloodgatePlayer(getPlayer().getUniqueId())) {
-                    getPlayer().closeInventory();
+            if (slotIter.hasNext()) {
+                setItem(slotIter.next(), builder.build(() -> {
+                    // right click
+                    plugin.promptPlayer(claim, getPlayer());
+                }, () -> {
+                    // left click
+                    if (plugin.useFloodgateUI && FloodgateApi.getInstance().isFloodgatePlayer(getPlayer().getUniqueId())) {
+                        getPlayer().closeInventory();
 //                    new BedrockUI(plugin, claim, location, getPlayer()).open();
-                    getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
-                } else {
-                    getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
-                }
-            }));
+                        getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+                    } else {
+                        getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+                    }
+                }));
+            }
 
 
         }
