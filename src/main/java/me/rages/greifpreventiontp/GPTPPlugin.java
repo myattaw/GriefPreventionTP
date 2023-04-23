@@ -56,7 +56,7 @@ public class GPTPPlugin extends ExtendedJavaPlugin {
 
         Commands.create().assertPermission("griefpreventiontp.use")
                 .assertPlayer()
-                .handler(cmd -> new ClaimsUI(this, cmd.sender(), "Teleport Menu").open())
+                .handler(cmd -> new ClaimsUI(this, cmd.sender(), "Teleport Menu", 0).open())
                 .registerAndBind(this, new String[]{"claims", "griefpreventiontp", "gptp"});
 
         Schedulers.async().runRepeating(() -> saveRenameData(), 12000L, 12000L);
