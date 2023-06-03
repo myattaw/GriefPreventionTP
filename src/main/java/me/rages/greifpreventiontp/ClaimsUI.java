@@ -141,18 +141,27 @@ public class ClaimsUI extends Gui {
 
     }
 
-    public boolean teleportPlayer(Location location) {
+    public void teleportPlayer(Location location) {
+
+
 
         if (location.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
             for (int y = 64; y < 128; y++) {
                 Block block = location.getWorld().getBlockAt(location.getBlockX(), y, location.getBlockZ());
                 if (block.getType().isAir() && block.getRelative(BlockFace.UP).getType().isAir() && block.getRelative(BlockFace.DOWN).isSolid()) {
-                    return getPlayer().teleport(block.getLocation().add(0.5, 0, 0.5));
+                    if (plugin.isUsingFoliaAPI()) {
+                        getPlayer().teleportAsync(block.getLocation().add(0.5, 0, 0.5));
+                    } else {
+                        getPlayer().teleport(block.getLocation().add(0.5, 0, 0.5));
+                    }
                 }
             }
         }
-
-        return getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+        if (plugin.isUsingFoliaAPI()) {
+            getPlayer().teleportAsync(location.toHighestLocation().add(0.5, 1, 0.5));
+        } else {
+            getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
+        }
     }
 
 }

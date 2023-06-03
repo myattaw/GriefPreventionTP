@@ -27,6 +27,7 @@ import java.util.logging.Level;
         name = "GriefPreventionTP",
         softDepends = {"floodgate"},
         hardDepends = {"helper", "GriefPrevention"},
+        foliaSupport = true,
         apiVersion = "1.19"
 )
 public class GPTPPlugin extends ExtendedJavaPlugin {
@@ -37,11 +38,20 @@ public class GPTPPlugin extends ExtendedJavaPlugin {
 
     public boolean useFloodgateUI = false;
 
+    private boolean useFoliaAPI = false;
+
+
     @Override
     protected void enable() {
 
         saveDefaultConfig();
         loadRenameData();
+
+        try {
+            Class.forName("io.papermc.paper.threadedregions.scheduler.EntityScheduler");
+            getLogger().log(Level.INFO, "Server is running Folia using async teleportation");
+            useFoliaAPI = true;
+        } catch (ClassNotFoundException ignored) {}
 
         if (!getServer().getPluginManager().isPluginEnabled("GriefPrevention")) {
             getLogger().log(Level.SEVERE, "Could not find GriefPrevention plugin!");
@@ -105,5 +115,9 @@ public class GPTPPlugin extends ExtendedJavaPlugin {
 
     public Map<Long, String> getClaimRenameMap() {
         return claimRenameMap;
+    }
+
+    public boolean isUsingFoliaAPI() {
+        return useFoliaAPI;
     }
 }
