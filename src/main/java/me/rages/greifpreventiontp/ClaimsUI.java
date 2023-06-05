@@ -1,19 +1,19 @@
 package me.rages.greifpreventiontp;
 
 import com.google.common.collect.ImmutableMap;
+import io.papermc.lib.PaperLib;
+import io.papermc.paper.threadedregions.scheduler.RegionScheduler;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuScheme;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.Iterator;
@@ -141,27 +141,32 @@ public class ClaimsUI extends Gui {
 
     }
 
+    private void teleportSafely(Player player, Location location, boolean useHighestLocation) {
+        if (plugin.isUsingFoliaAPI()) {
+            if (useHighestLocation) {
+                Location finalLocation = location;
+                PaperLib.getChunkAtAsync(location).thenRun(() -> PaperLib.teleportAsync(player, finalLocation.toHighestLocation().add(0.5, 1, 0.5)));
+            } else {
+                PaperLib.teleportAsync(player, location.add(0.5, 1, 0.5));
+            }
+        } else {
+            if (useHighestLocation) {
+                location = location.toHighestLocation();
+            }
+            player.teleport(location.add(0.5, 1, 0.5));
+        }
+    }
+
     public void teleportPlayer(Location location) {
-
-
-
         if (location.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
             for (int y = 64; y < 128; y++) {
                 Block block = location.getWorld().getBlockAt(location.getBlockX(), y, location.getBlockZ());
                 if (block.getType().isAir() && block.getRelative(BlockFace.UP).getType().isAir() && block.getRelative(BlockFace.DOWN).isSolid()) {
-                    if (plugin.isUsingFoliaAPI()) {
-                        getPlayer().teleportAsync(block.getLocation().add(0.5, 0, 0.5));
-                    } else {
-                        getPlayer().teleport(block.getLocation().add(0.5, 0, 0.5));
-                    }
+                    teleportSafely(getPlayer(), block.getLocation(), false);
                 }
             }
         }
-        if (plugin.isUsingFoliaAPI()) {
-            getPlayer().teleportAsync(location.toHighestLocation().add(0.5, 1, 0.5));
-        } else {
-            getPlayer().teleport(location.toHighestLocation().add(0.5, 1, 0.5));
-        }
+        teleportSafely(getPlayer(), location, true);
     }
 
 }
